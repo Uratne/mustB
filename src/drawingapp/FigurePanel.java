@@ -15,9 +15,11 @@ import java.awt.event.ActionListener;
 public class FigurePanel extends JPanel implements Constants {
 
     JComboBox figures;
+    ActionPanel actionPanel;
 
-    FigurePanel(DrawingPanel drawingPanel){
+    FigurePanel(DrawingPanel drawingPanel, ActionPanel actionPanel, FigureDataPanel figureDataPanel){
         this.setLayout(new GridBagLayout());
+        this.actionPanel = actionPanel;
 
         TitledBorder figurePanelBorder = BorderFactory.createTitledBorder("Figure Types");
         figurePanelBorder.setTitleFont(arialBold12);
@@ -33,8 +35,13 @@ public class FigurePanel extends JPanel implements Constants {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String jComBoxData = (String) figures.getSelectedItem();
+                String actionBoxData = (String) getActionPanel().getSelectedItem();
                 System.out.println("Choice changed to " + jComBoxData);
+                figureDataPanel.setText(jComBoxData);
                 drawingPanel.setFigure(jComBoxData);
+                if (jComBoxData.equals("Line") && (actionBoxData.equals("Enlarge") || actionBoxData.equals("Shrink"))) {
+                    getActionPanel().setSelectedIndex(0);
+                }
             }
         };
 
@@ -48,6 +55,13 @@ public class FigurePanel extends JPanel implements Constants {
         return this.figures.getSelectedItem();
     }
 
+    public void setActionPanel(ActionPanel actionPanel) {
+        this.actionPanel = actionPanel;
+    }
+
+    public ActionPanel getActionPanel() {
+        return actionPanel;
+    }
     
     public void lockFigurePanel() {
         this.figures.setEnabled(false);

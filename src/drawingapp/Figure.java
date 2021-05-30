@@ -3,6 +3,14 @@ package drawingapp;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * Parent class for Circle, Rect, Cross and Line
+ * Creates a figure with position, size, shape and color of the figure to be rendered.
+ * @see Circle
+ * @see Rect
+ * @see Cross
+ * @author yourName
+ */
 public class Figure extends JComponent {
 
     Point position;

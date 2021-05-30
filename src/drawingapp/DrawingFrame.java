@@ -2,11 +2,22 @@ package drawingapp;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.*;
 
+/**
+ * This class creates the frame for the Swing program. On this frame we will build our
+ * drawing program. This frame consists of two panels. 1. control panel | 2. drawing panel
+ * @see ControlPanel
+ * @see DrawingPanel
+ * @author yourName
+ */
 public class DrawingFrame extends JFrame implements Constants {
 
     private final DrawingPanel drawingPanel = new DrawingPanel();
     FigurePanel figurePanel;
+    ActionPanel actionPanel;
+    FigureDataPanel figureDataPanel;
+    CheckBoxPanel checkBoxPanel;
     ControlPanel controlPanel;
     
     public DrawingFrame() {
@@ -15,11 +26,22 @@ public class DrawingFrame extends JFrame implements Constants {
         this.getContentPane().setLayout(new BorderLayout());
 
         //constructors
-        figurePanel = new FigurePanel(drawingPanel);
+        figureDataPanel = new FigureDataPanel();
+        figurePanel = new FigurePanel(drawingPanel, actionPanel, figureDataPanel);
+        actionPanel = new ActionPanel(drawingPanel, figurePanel);
+        checkBoxPanel = new CheckBoxPanel(drawingPanel);
+        
+        figurePanel.setActionPanel(actionPanel);
 
+        controlPanel = new ControlPanel(figurePanel, actionPanel, figureDataPanel, checkBoxPanel);
 
-        controlPanel = new ControlPanel(figurePanel);
+        class drawingActionHandler extends MouseAdapter {
+            public void mouseClicked(MouseEvent e){
+                actionPanel.setSelectedIndex(0);
+            }
+        }
 
+        drawingPanel.addMouseListener(new drawingActionHandler());
 
         /*
           Initialisation code for the JFrame.
