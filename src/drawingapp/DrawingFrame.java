@@ -35,8 +35,32 @@ public class DrawingFrame extends JFrame implements Constants {
 
         controlPanel = new ControlPanel(figurePanel, actionPanel, figureDataPanel, checkBoxPanel);
 
+         /*
+          Mouse Listener for the drawing panel to lock and unlock figure panel and action panel
+          during dynamic actions such as drawing a line or moving a figure so the user cannot enable another option.
+          Such as while drawing a line select circle as final click of line should end the line. Not draw a circle.
+         */
         class drawingActionHandler extends MouseAdapter {
             public void mouseClicked(MouseEvent e){
+                if(figurePanel.getSelectedItem().equals("Line")) {
+                    if (drawingPanel.getDrawingLine()) {
+                        figurePanel.lockFigurePanel();
+                        actionPanel.lockActionPanel();
+                    } else {
+                        figurePanel.unlockFigurePanel();
+                        actionPanel.unlockActionPanel();
+                    }
+                }  
+                if (actionPanel.getSelectedItem().equals("Move")){
+                    if (drawingPanel.getMoving()) {
+                        figurePanel.lockFigurePanel();
+                        actionPanel.lockActionPanel();
+                    } else {
+                        figurePanel.unlockFigurePanel();
+                        actionPanel.unlockActionPanel();
+                    }
+                }
+
                 actionPanel.setSelectedIndex(0);
             }
         }

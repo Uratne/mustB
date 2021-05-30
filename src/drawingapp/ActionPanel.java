@@ -30,7 +30,13 @@ public class ActionPanel extends JPanel implements Constants {
         ActionListener actionJComBoxActionListener = e -> {
             String figureJComBoxData = (String) figures.getSelectedItem();
             String actionJComBoxData = (String) actionJComBox.getSelectedItem();
-            if (figureJComBoxData.equals("Line") && ( actionJComBoxData.equals("Enlarge") || actionJComBoxData.equals("Shrink") )) {
+            if(drawingPanel.getDrawingLine()){
+                actionJComBox.setSelectedIndex(0);
+            }
+            else if (drawingPanel.getMoving()){
+                actionJComBox.setSelectedIndex(4);
+            }
+            else if (figureJComBoxData.equals("Line") && ( actionJComBoxData.equals("Enlarge") || actionJComBoxData.equals("Shrink") )) {
                 actionJComBox.setSelectedIndex(0);
             } else {
                 drawingPanel.setAction(actionJComBoxData);

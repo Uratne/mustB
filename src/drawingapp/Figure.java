@@ -9,6 +9,7 @@ import java.awt.*;
  * @see Circle
  * @see Rect
  * @see Cross
+ * @see Line
  * @author yourName
  */
 public class Figure extends JComponent {

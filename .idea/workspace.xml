@@ -36,7 +36,6 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
-    <property name="nodejs_package_manager_path" value="npm" />
   </component>
   <component name="RunManager" selected="Application.DrawingApp">
     <configuration name="DrawingApp" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
@@ -142,7 +141,6 @@
       <workItem from="1621180093936" duration="529000" />
       <workItem from="1621180731729" duration="11873000" />
       <workItem from="1621209007634" duration="9706000" />
-      <workItem from="1622370249389" duration="1287000" />
     </task>
     <servers />
   </component>

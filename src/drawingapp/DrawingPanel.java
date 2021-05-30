@@ -25,10 +25,15 @@ public class DrawingPanel extends JPanel implements Constants {
     List<Figure> figureList = new ArrayList<>();
     String figure, action;
     Color selectedColor;
+    Boolean drawingLine, moving;
+    int movingFigure;
 
     DrawingPanel(){
         this.figure = "Circle";
         this.action = "None";
+        this.drawingLine = false;
+        this.moving = false;
+        this.movingFigure = 0;
         this.selectedColor = Color.red;
         this.setLayout(null);
         this.setPreferredSize(new Dimension(450, 400));
@@ -45,11 +50,17 @@ public class DrawingPanel extends JPanel implements Constants {
             g.setColor(figure.getColor());
             int x = (int) figure.getPosition().getX();
             int y = (int) figure.getPosition().getY();
-
-            int width = (int) figure.getDimension().getWidth();
-            int height = (int) figure.getDimension().getHeight();
-            String shape = figure.getShape();
-            draw(g, shape, x, y, width, height);
+            if (figure.getShape().equals("Line")){
+                Line line = (Line) figure;
+                int endX = (int) line.getEndPosition().getX();
+                int endY = (int) line.getEndPosition().getY();
+                g.drawLine(x,y,endX, endY);
+            } else {
+                int width = (int) figure.getDimension().getWidth();
+                int height = (int) figure.getDimension().getHeight();
+                String shape = figure.getShape();
+                draw(g, shape, x, y, width, height);
+            }
         }
     }
 
@@ -75,6 +86,15 @@ public class DrawingPanel extends JPanel implements Constants {
                         addCircle(e.getX(), e.getY(), width, height, getSelectedColor());
                     } else if ("Cross".equals(figure)) {
                         addCross(e.getX(), e.getY(), width, height, getSelectedColor());
+                    } else if ("Line".equals(figure)) {
+                        if (drawingLine) {
+                            drawLine(e.getX(), e.getY());
+                            drawingLine = false;
+                        } else {
+                            startLine(e.getX(), e.getY(), getSelectedColor());
+                            drawingLine = true;
+                        }
+
                     }
                     break;
                 case "Enlarge":
@@ -83,9 +103,28 @@ public class DrawingPanel extends JPanel implements Constants {
                 case "Shrink":
                     shrink(e.getX(), e.getY());
                     break;
+                case "Move":
+                    if (!moving) {
+                        movingFigure = getMovingFigure(e.getX(), e.getY());
+                        if (movingFigure != -1) moving = true;
+                    } else {
+                        moving = false;
+                    }
+                    break;
             }
         }
 
+        /**
+         * mouse movements are used for draiwing lines while on figure options: Line
+         * also used when the action option is set to Move, to move figures dynamically.
+         */
+        public void mouseMoved(MouseEvent e) {
+            if(drawingLine) {
+                drawLine(e.getX(), e.getY());
+            } else if (moving) {
+                moveFigure(movingFigure, e.getX(), e.getY());
+            }
+        }
     }
 
     /**
@@ -174,14 +213,22 @@ public class DrawingPanel extends JPanel implements Constants {
         int index = -1;
         for ( int i = figureList.size()-1; i >= 0; i--){
             Figure figure = figureList.get(i);
+            if(figure.getShape().equals("Line")){
+                Line line = (Line) figure;
+                boolean nearLine = isNearLine(line, x, y);
+                if(nearLine) {
+                    index = i;
+                    break;
+                }
+            } else {
+                int newMiddle = (int) figure.getDimension().getWidth() / 2;
+                int figureX = Math.abs((int) figure.getPosition().getX() + newMiddle - x);
+                int figureY = Math.abs((int) figure.getPosition().getY() + newMiddle - y);
 
-            int newMiddle = (int) figure.getDimension().getWidth() / 2;
-            int figureX = Math.abs((int) figure.getPosition().getX() + newMiddle - x);
-            int figureY = Math.abs((int) figure.getPosition().getY() + newMiddle - y);
-
-            if (figureX <= newMiddle && figureY <= newMiddle) {
-                index = i;
-                break;
+                if (figureX <= newMiddle && figureY <= newMiddle) {
+                    index = i;
+                    break;
+                }
             }
         }
 
@@ -249,4 +296,104 @@ public class DrawingPanel extends JPanel implements Constants {
         return selectedColor;
     }
 
+    /**
+     * Creates figure line.
+     * To create a line two mouse click inputs on the canvas is required. This will take the first mouse click
+     * input and initialise a line. After initialising a line control panel is locked till the
+     * second finalising click. Locking is done in the drawing frame
+     * @see DrawingFrame
+     * @param x x coordinates for initialising a line.
+     * @param y y coordinates for initialising a line.
+     * @param color color of the line.
+     */
+    public void startLine(int x, int y, Color color) {
+        Point point = new Point(x, y);
+        Dimension dimension = new Dimension(0,0);
+
+        Line line = new Line(point, point, dimension, color);
+        figureList.add(line);
+    }
+
+    /**
+     * Ends a figure line. startLine() need to be invoked before this is invoked. And it should be
+     * invoked right after startLine()
+     * @param x x coordinates for the initialised lines end point.
+     * @param y y coordinates for the initialised lines end point.
+     */
+    public void drawLine(int x, int y) {
+        Point point = new Point(x, y);
+        Line line = (Line) figureList.get(figureList.size() - 1);
+
+        line.setEndPosition(point);
+
+        this.repaint();
+    }
+
+    /**
+     * Since lines does not have a bounding rectangle similar to that of other figures
+     * to find the smallest rectangle such that it bounds the line with 1 pixel distance this method is used.
+     * we will check the distance from a given point from mouse click input to the line along the x-axis and
+     * the y-axis such that even if one of them is less than 1 pixel method will return as true;
+     * <img src="./doc-files/figure.jpg">
+     * @param line line in question that needs to be checked for the distance relative to the point
+     * @param m x coordinates for the point which the line is relative to
+     * @param n y coordinates for the point which the line is relative to
+     * @return is a boolean value whether or not the line is close to the given point along x-axis or y-axis
+     */
+    public boolean isNearLine(Line line, int m, int n){
+        double a1 = line.getPosition().getX();
+        double b1 = line.getPosition().getY();
+
+        double a2 = line.getEndPosition().getX();
+        double b2 = line.getEndPosition().getY();
+
+        double A = (a1 - a2)/(b1 - b2);
+        double Xn = A*n - A*b2 + a2;
+        double Ym = m/A - 1/A*a2 + b2;
+
+        boolean xNearLine = Math.abs(Xn - m) <= 1;
+        boolean yNearLine = Math.abs(Ym - n) <= 1;
+
+        return xNearLine || yNearLine;
+    }
+
+    public Boolean getMoving() {
+        return moving;
+    }
+
+    private int getMovingFigure(int x, int y){
+        return findFigure(x, y);
+    }
+
+    /**
+     * This will move a figure to a given point.
+     * @param index index of the figure to be moved in figureList.
+     * @param x x coordinate of the point which you want the figure to be moved
+     * @param y y coordinate of the point which you want the figure to be moved.
+     */
+    public void moveFigure(int index,int x, int y){
+
+        if (index != -1) {
+            Figure figure = figureList.get(index);
+
+            if(figure.getShape().equals("Line")){
+                Line line = (Line) figure;
+                int endX = (int) line.getEndPosition().getX() + (x - (int) figure.getPosition().getX());
+                int endY = (int) line.getEndPosition().getY() + (y - (int) figure.getPosition().getY());
+                
+                Point lineEndPoint = new Point(endX, endY);
+                line.setEndPosition(lineEndPoint);
+            }
+            Point point = new Point(x, y);
+            figure.setPosition(point);
+
+            this.repaint();
+        } else {
+            moving = false;
+        }
+    }
+
+    public Boolean getDrawingLine() {
+        return drawingLine;
+    }
 }

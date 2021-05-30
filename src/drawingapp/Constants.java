@@ -8,8 +8,8 @@ import java.awt.*;
  */
 public interface Constants {
     // useful constants can be defined here...
-    String[] figureOptions = {"Circle", "Square", "Cross"};
-    String[] figureActions = { "None", "Delete", "Enlarge", "Shrink"};
+    String[] figureOptions = {"Circle", "Square", "Cross", "Line"};
+    String[] figureActions = { "None", "Delete", "Enlarge", "Shrink", "Move"};
     int width = 50;
     int height = 50;
     Font arialBold12 = new Font("Arial", Font.BOLD, 12);
